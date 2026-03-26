@@ -1,6 +1,6 @@
 import { Job } from 'bullmq';
 import { supabase } from '../lib/supabase';
-import { recommendationQueue } from './queueService';
+import { getRecommendationQueue } from './queueService';
 import { getSocketIO } from './socketService';
 
 const EXTRACTION_VERSION = 'v1.0-mock';
@@ -46,7 +46,7 @@ export async function runExtractionJob(job: Job) {
     });
     if (insertError) throw new Error(insertError.message);
 
-    await recommendationQueue.add('recommend', { session_id }, {
+    await getRecommendationQueue().add('recommend', { session_id }, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 5000 },
     });

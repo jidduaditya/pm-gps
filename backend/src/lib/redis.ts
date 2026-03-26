@@ -15,6 +15,3 @@ export function createRedisConnection(): IORedis {
   conn.on('error', (err) => console.error('Redis connection error:', err.message));
   return conn;
 }
-
-/** General-purpose IORedis instance (non-BullMQ use) */
-export const redis = createRedisConnection();

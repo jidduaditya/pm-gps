@@ -1,8 +1,21 @@
 import { Queue } from 'bullmq';
 import { createRedisConnection } from '../lib/redis';
 
-export const extractionQueue = new Queue('extraction', { connection: createRedisConnection() });
-export const recommendationQueue = new Queue('recommendation', { connection: createRedisConnection() });
+let _extractionQueue: Queue | null = null;
+let _recommendationQueue: Queue | null = null;
 
-extractionQueue.on('error', (err) => console.error('Extraction queue error:', err.message));
-recommendationQueue.on('error', (err) => console.error('Recommendation queue error:', err.message));
+export function getExtractionQueue(): Queue {
+  if (!_extractionQueue) {
+    _extractionQueue = new Queue('extraction', { connection: createRedisConnection() });
+    _extractionQueue.on('error', (err) => console.error('Extraction queue error:', err.message));
+  }
+  return _extractionQueue;
+}
+
+export function getRecommendationQueue(): Queue {
+  if (!_recommendationQueue) {
+    _recommendationQueue = new Queue('recommendation', { connection: createRedisConnection() });
+    _recommendationQueue.on('error', (err) => console.error('Recommendation queue error:', err.message));
+  }
+  return _recommendationQueue;
+}

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { supabase } from '../lib/supabase';
-import { extractionQueue } from '../services/queueService';
+import { getExtractionQueue } from '../services/queueService';
 import { documentService } from '../services/documentService';
 import { AppError } from '../utils/AppError';
 
@@ -24,7 +24,7 @@ export const processController = {
     if ((docCount ?? 0) === 0) throw new AppError('At least one document is required', 400, 'NO_DOCUMENTS');
     if ((qCount ?? 0) === 0) throw new AppError('Questionnaire must be completed', 400, 'NO_QUESTIONNAIRE');
 
-    await extractionQueue.add('extract', { session_id }, {
+    await getExtractionQueue().add('extract', { session_id }, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 5000 },
     });
