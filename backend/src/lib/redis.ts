@@ -1,8 +1,13 @@
 import IORedis from 'ioredis';
 
 const url = process.env.REDIS_URL!;
+const useTls = url.startsWith('rediss://');
 
-export const redis = new IORedis(url, {
+/** Shared connection config — each consumer creates its own IORedis instance */
+export const redisOpts = {
   maxRetriesPerRequest: null,
-  tls: url.startsWith('rediss://') ? {} : undefined,
-});
+  tls: useTls ? { rejectUnauthorized: false } : undefined,
+} as const;
+
+/** General-purpose IORedis instance (non-BullMQ use) */
+export const redis = new IORedis(url, redisOpts);
