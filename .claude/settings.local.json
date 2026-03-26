@@ -76,7 +76,10 @@
       "Bash(lsof -ti:3000 | xargs kill -9 2>/dev/null; lsof -ti:8080 | xargs kill -9 2>/dev/null; echo \"killed\")",
       "Bash(sleep 4 && curl -s -o /dev/null -w \"backend:%{http_code}\" http://localhost:3000/api/auth && echo \"\" && curl -s -o /dev/null -w \"frontend:%{http_code}\" http://localhost:8080 && echo \"\")",
       "Bash(echo \"# pm-gps\" >> README.md && git init && git add -A && git commit -m \"Initial commit — PM-GPS full stack with rule-based pipeline\" && git branch -M main && git remote add origin https://github.com/jidduaditya/pm-gps.git)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls /Users/aasmac/Desktop/PM-GPS/frontend/vite.config.ts /Users/aasmac/Desktop/PM-GPS/frontend/next.config.* 2>&1)",
+      "Bash(git add:*)",
+      "Bash(rm /Users/aasmac/Desktop/PM-GPS/Dockerfile && git add -A && git commit -m \"$\\(cat <<'EOF'\nRemove Dockerfile — let Nixpacks auto-detect from root package.json\n\nRailway was using its own generated Dockerfile instead of ours.\nRemoving it forces pure Nixpacks detection from package.json.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push)"
     ]
   }
 }
