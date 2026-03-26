@@ -9,5 +9,12 @@ export const redisOpts = {
   tls: useTls ? { rejectUnauthorized: false } : undefined,
 } as const;
 
+/** Create a new IORedis connection with error handling */
+export function createRedisConnection(): IORedis {
+  const conn = new IORedis(url, redisOpts);
+  conn.on('error', (err) => console.error('Redis connection error:', err.message));
+  return conn;
+}
+
 /** General-purpose IORedis instance (non-BullMQ use) */
-export const redis = new IORedis(url, redisOpts);
+export const redis = createRedisConnection();

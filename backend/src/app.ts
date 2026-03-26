@@ -17,12 +17,22 @@ import { coachRoutes } from './routes/coach';
 export const app = express();
 
 app.use(helmet());
+
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:8080')
+  .split(',')
+  .map((o) => o.trim());
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) return cb(null, true);
+    cb(null, false);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/session', sessionRoutes);

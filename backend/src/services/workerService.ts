@@ -1,12 +1,16 @@
 import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
-import { redisOpts } from '../lib/redis';
+import { createRedisConnection } from '../lib/redis';
 import { runExtractionJob } from './extractionService';
 import { runRecommendationJob } from './recommendationService';
 
 export function startWorkers() {
-  const conn = () => new IORedis(process.env.REDIS_URL!, redisOpts);
-  new Worker('extraction', runExtractionJob, { connection: conn() });
-  new Worker('recommendation', runRecommendationJob, { connection: conn() });
-  console.log('BullMQ workers started');
+  try {
+    const w1 = new Worker('extraction', runExtractionJob, { connection: createRedisConnection() });
+    const w2 = new Worker('recommendation', runRecommendationJob, { connection: createRedisConnection() });
+    w1.on('error', (err) => console.error('Extraction worker error:', err.message));
+    w2.on('error', (err) => console.error('Recommendation worker error:', err.message));
+    console.log('BullMQ workers started');
+  } catch (err) {
+    console.error('Failed to start workers (server continues without job processing):', err);
+  }
 }

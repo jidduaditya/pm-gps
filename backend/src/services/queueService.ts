@@ -1,7 +1,8 @@
 import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
-import { redisOpts } from '../lib/redis';
+import { createRedisConnection } from '../lib/redis';
 
-const conn = () => new IORedis(process.env.REDIS_URL!, redisOpts);
-export const extractionQueue = new Queue('extraction', { connection: conn() });
-export const recommendationQueue = new Queue('recommendation', { connection: conn() });
+export const extractionQueue = new Queue('extraction', { connection: createRedisConnection() });
+export const recommendationQueue = new Queue('recommendation', { connection: createRedisConnection() });
+
+extractionQueue.on('error', (err) => console.error('Extraction queue error:', err.message));
+recommendationQueue.on('error', (err) => console.error('Recommendation queue error:', err.message));
