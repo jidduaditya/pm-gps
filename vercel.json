@@ -3,8 +3,8 @@
   "outputDirectory": "frontend/dist",
   "framework": null,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://your-backend.railway.app/api/$1" },
-    { "source": "/socket.io/(.*)", "destination": "https://your-backend.railway.app/socket.io/$1" },
+    { "source": "/api/(.*)", "destination": "https://pm-gps-production.up.railway.app/api/$1" },
+    { "source": "/socket.io/(.*)", "destination": "https://pm-gps-production.up.railway.app/socket.io/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
