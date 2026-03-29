@@ -117,7 +117,7 @@ const QuestionnairePage = () => {
         throw new Error(body?.error?.message || `Failed to start processing (${pRes.status})`);
       }
 
-      navigate("/processing");
+      navigate("/results");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

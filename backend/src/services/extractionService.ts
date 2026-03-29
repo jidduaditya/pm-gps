@@ -1,13 +1,10 @@
-import { Job } from 'bullmq';
 import { supabase } from '../lib/supabase';
-import { getRecommendationQueue } from './queueService';
+import { runRecommendationJob } from './recommendationService';
 import { getSocketIO } from './socketService';
 
 const EXTRACTION_VERSION = 'v1.0-mock';
 
-export async function runExtractionJob(job: Job) {
-  const { session_id } = job.data;
-
+export async function runExtractionJob(session_id: string) {
   try {
     const [{ data: documents, error: docsError }, { data: questionnaire }] = await Promise.all([
       supabase.from('documents').select('*').eq('session_id', session_id),
@@ -46,10 +43,8 @@ export async function runExtractionJob(job: Job) {
     });
     if (insertError) throw new Error(insertError.message);
 
-    await getRecommendationQueue().add('recommend', { session_id }, {
-      attempts: 2,
-      backoff: { type: 'exponential', delay: 5000 },
-    });
+    // Run recommendation inline (no queue)
+    await runRecommendationJob(session_id);
 
   } catch (err: any) {
     console.error(`[ExtractionService] session=${session_id} error=${err.message}`);

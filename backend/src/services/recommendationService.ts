@@ -1,4 +1,3 @@
-import { Job } from 'bullmq';
 import { supabase } from '../lib/supabase';
 import { getSocketIO } from './socketService';
 
@@ -12,9 +11,7 @@ function categorise(score: number): ScoreCategory {
   return 'Long Shot';
 }
 
-export async function runRecommendationJob(job: Job) {
-  const { session_id } = job.data;
-
+export async function runRecommendationJob(session_id: string) {
   try {
     const { data: userProfile, error: profileError } = await supabase
       .from('user_profiles')
@@ -42,7 +39,6 @@ export async function runRecommendationJob(job: Job) {
     if (companiesError) throw new Error(companiesError.message);
 
     // Rule-based scoring (no LLM required)
-    // Build userSkills from ALL four skill arrays (+ legacy domain_expertise for existing rows)
     const allUserSkillArrays = [
       ...(profile.technical_skills || []),
       ...(profile.domain_skills || profile.domain_expertise || []),
@@ -53,7 +49,6 @@ export async function runRecommendationJob(job: Job) {
     const userInterests = new Set((profile.stated_interests || []).map((s: string) => s.toLowerCase()));
     const yearsExp = profile.total_years_experience || 3;
 
-    // Substring match: user skill "sql" matches archetype "SQL and basic data querying"
     const userSkillsArr = Array.from(userSkills);
     function fuzzyMatch(archetypeSkill: string): boolean {
       const lower = archetypeSkill.toLowerCase();
@@ -70,7 +65,6 @@ export async function runRecommendationJob(job: Job) {
       const missingMustHave = mustHave.filter(s => !fuzzyMatch(s));
       const missingGoodToHave = goodToHave.filter(s => !fuzzyMatch(s));
 
-      // Transferable = user skills not matched by any archetype skill
       const allArchSkillsLower = [...mustHave, ...goodToHave].map(s => s.toLowerCase());
       const transferableSkills = allUserSkillArrays.filter((s: string) => {
         const sl = s.toLowerCase();
@@ -105,7 +99,6 @@ export async function runRecommendationJob(job: Job) {
       };
     });
 
-    // Apply classification rules in code
     const buckets: Record<ScoreCategory, any[]> = {
       'Excellent Match': [],
       'Need Some Work': [],
@@ -117,20 +110,17 @@ export async function runRecommendationJob(job: Job) {
       buckets[category].push({ ...role, category });
     }
 
-    // Sort and cap at 2 per category
     const selectedRoles: any[] = [];
     for (const [category, roles] of Object.entries(buckets)) {
       const top2 = roles.sort((a, b) => b.score - a.score).slice(0, 2);
       selectedRoles.push(...top2);
     }
 
-    // Build skills_delta
     const skillsDelta: Record<string, any> = {};
     for (const role of selectedRoles) {
       skillsDelta[role.archetype_name] = role.skills_delta;
     }
 
-    // Build company_suggestions
     const companySuggestions: Record<string, any> = {};
     for (const role of selectedRoles) {
       companySuggestions[role.archetype_name] = role.company_suggestions;
