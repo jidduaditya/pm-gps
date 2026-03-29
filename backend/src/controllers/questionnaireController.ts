@@ -12,9 +12,15 @@ export const questionnaireController = {
 
     await documentService.validateSessionOwnership(session_id, req.user!.id);
 
+    // Delete any previous response for this session (handles retries)
+    await supabase
+      .from('questionnaire_responses')
+      .delete()
+      .eq('session_id', session_id);
+
     const { error } = await supabase
       .from('questionnaire_responses')
-      .upsert({ session_id, responses }, { onConflict: 'session_id' });
+      .insert({ session_id, responses });
     if (error) throw new AppError(error.message, 500, 'DB_ERROR');
 
     res.json({ message: 'Questionnaire submitted successfully' });
