@@ -14,7 +14,7 @@ export const questionnaireController = {
 
     const { error } = await supabase
       .from('questionnaire_responses')
-      .insert({ session_id, responses });
+      .upsert({ session_id, responses }, { onConflict: 'session_id' });
     if (error) throw new AppError(error.message, 500, 'DB_ERROR');
 
     res.json({ message: 'Questionnaire submitted successfully' });

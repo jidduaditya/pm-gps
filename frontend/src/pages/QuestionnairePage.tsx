@@ -102,14 +102,20 @@ const QuestionnairePage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId, responses }),
       });
-      if (!qRes.ok) throw new Error("Failed to submit questionnaire");
+      if (!qRes.ok) {
+        const body = await qRes.json().catch(() => null);
+        throw new Error(body?.error?.message || `Questionnaire submission failed (${qRes.status})`);
+      }
 
       const pRes = await apiFetch("/api/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId }),
       });
-      if (!pRes.ok) throw new Error("Failed to start processing");
+      if (!pRes.ok) {
+        const body = await pRes.json().catch(() => null);
+        throw new Error(body?.error?.message || `Failed to start processing (${pRes.status})`);
+      }
 
       navigate("/processing");
     } catch (err: unknown) {
